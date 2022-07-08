@@ -45,31 +45,38 @@ def etappe_afstand(stage):
     
     return afstand
 
+def prep_data(ruwe_data, rugnr):
+    data_renner = ruwe_data[ruwe_data['Bib'].astype(str).str.match(str(rugnr)) == True]
+    data_renner = data_renner[ruwe_data['Status'].astype(str).str.match(str('active')) == True]
+
+    return data_renner
+
+def prep_afstand(data_renner, afstand):
+    for x in data_renner.index:
+        nogtegaan = data_renner.loc[x, 'kmToFinish']
+        data_renner.loc[x, 'AfgelegdeAfstand'] = afstand - nogtegaan
+
+    return data_renner
+
+def prep_tijd(data_renner):
+    for x in data_renner.index:
+        tijd_renner = data_renner.loc[x, 'TimeStamp']
+        data_renner.loc[x, 'Tijd'] = time.strftime('%H:%M:%S', time.localtime(tijd_renner))
+
+    return data_renner
+
 def maak_grafiek(renner1, renner2, etappe):
     rugnr1 = zoek_rugnr(renner1)
     rugnr2 = zoek_rugnr(renner2)
     etappenr = etappe_datum(etappe)
     afstand = etappe_afstand(etappe)
     ruwe_data = pd.read_csv(f'renners_telemetry_{etappenr}.csv', sep=',')
-    data_renner1 = ruwe_data[ruwe_data['Bib'].astype(str).str.match(str(rugnr1)) == True]
-    data_renner2 = ruwe_data[ruwe_data['Bib'].astype(str).str.match(str(rugnr2)) == True]
-    data_renner1 = data_renner1[ruwe_data['Status'].astype(str).str.match(str('active')) == True]
-    data_renner2 = data_renner2[ruwe_data['Status'].astype(str).str.match(str('active')) == True]
-    for x in data_renner1.index:
-        nogtegaan1 = data_renner1.loc[x, 'kmToFinish']
-        #nogtegaan1 = nogtegaan1.astype(float).tail(1).reset_index().loc[0, 'kmToFinish']
-        data_renner1.loc[x, 'AfgelegdeAfstand'] = afstand - nogtegaan1
-    for x in data_renner2.index:
-        nogtegaan2 = data_renner2.loc[x, 'kmToFinish']
-        #nogtegaan2 = nogtegaan2.astype(float).tail(1).reset_index().loc[0, 'kmToFinish']
-        data_renner2.loc[x, 'AfgelegdeAfstand'] = afstand - nogtegaan2
-    for x in data_renner1.index:
-        tijd_renner1 = data_renner1.loc[x, 'TimeStamp']
-        data_renner1.loc[x, 'Tijd'] = time.strftime('%H:%M:%S', time.localtime(tijd_renner1))
-    for x in data_renner2.index:
-        tijd_renner2 = data_renner2.loc[x, 'TimeStamp']
-        data_renner2.loc[x, 'Tijd'] = time.strftime('%H:%M:%S', time.localtime(tijd_renner2))
-    data_renner1.to_csv('d1.csv')
+    data_renner1 = prep_data(ruwe_data, rugnr1)
+    data_renner2 = prep_data(ruwe_data, rugnr2)
+    prep_afstand(data_renner1, afstand)
+    prep_afstand(data_renner2, afstand)
+    prep_tijd(data_renner1)
+    prep_tijd(data_renner2)
     for frame in [data_renner1, data_renner2]:
         plt.plot(frame['Tijd'], frame['AfgelegdeAfstand'])
     #plt.legend(loc=2)
