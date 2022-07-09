@@ -73,15 +73,25 @@ def maak_grafiek(renner1, renner2, etappe):
     ruwe_data = pd.read_csv(f'renners_telemetry_{etappenr}.csv', sep=',')
     data_renner1 = prep_data(ruwe_data, rugnr1)
     data_renner2 = prep_data(ruwe_data, rugnr2)
-    prep_afstand(data_renner1, afstand)
-    prep_afstand(data_renner2, afstand)
-    prep_tijd(data_renner1)
-    prep_tijd(data_renner2)
-    for frame in [data_renner1, data_renner2]:
-        plt.plot(frame['Tijd'], frame['AfgelegdeAfstand'])
-    #plt.legend(loc=2)
-    plt.title('test', fontsize=14)
-    #ax.xaxis.set_major_locator(months)
-    #ax.xaxis.set_major_formatter(timeFmt)
-    #ax.xaxis.set_minor_locator(days)
+    data_renner1 = prep_afstand(data_renner1, afstand)
+    data_renner2 = prep_afstand(data_renner2, afstand)
+    data_renner1 = prep_tijd(data_renner1)
+    data_renner2 = prep_tijd(data_renner2)
+
+    r1 = list(data_renner1['Tijd'])
+    r2 = list(data_renner2['Tijd'])
+    km = list(data_renner1['AfgelegdeAfstand'])
+
+    plt.style.use('seaborn')
+    fig, ax = plt.subplots()
+    ax.plot(km, r1, c='red')
+    ax.plot(km, r1, c='blue')
+
+    # Format plot
+    plt.title(f'TDF20220 etappe {etappe} {etappe}. {renner1} vs {renner2}', fontsize=16)
+    plt.xlabel('', fontsize=16)
+    fig.autofmt_xdate()
+    plt.ylabel('Tijd', fontsize=16)
+    plt.tick_params(axis='both', which='major', labelsize=16)
+
     plt.show()
