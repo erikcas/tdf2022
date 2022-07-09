@@ -2,11 +2,10 @@ import pandas as pd
 import numpy as np
 
 def list_etappes():
-    filename = 'etappes.csv'
+    url = "https://racecenter.letour.fr/api/stage-2022"
+    df = pd.read_json(url)
     header = ['stage', 'date']
-    # lees etappenummer en datum
-    df = pd.read_csv(filename, usecols=header)
-    # sorteer van laag naar hoog
+    df = df[header]
     df.sort_values(by=['date'], inplace=True)
     # zet om naar een python dictionary
     lijst = df.set_index('stage')['date'].to_dict()
@@ -18,10 +17,10 @@ def list_etappes():
     return etappes
 
 def list_renners():
-    filename = 'rijders.csv'
-    # lees de kolommen startnummer (bib) en achternaam
+    url = "https://racecenter.letour.fr/api/allCompetitors-2022"
+    df = pd.read_json(url)
     header = ['bib', 'lastnameshort']
-    df = pd.read_csv(filename, usecols=header)
+    df = df[header]
     # verwijder rijen met lege rugnummers
     df['bib'].replace('', np.nan, inplace=True)
     df.dropna(subset=['bib'], inplace=True)
