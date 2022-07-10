@@ -78,17 +78,19 @@ def maak_grafiek(renner1, renner2, etappe):
     data_renner1 = prep_tijd(data_renner1)
     data_renner2 = prep_tijd(data_renner2)
 
-    r1 = list(data_renner1['Tijd'])
-    r2 = list(data_renner2['Tijd'])
-    km = list(data_renner1['AfgelegdeAfstand'])
+    for frame in [data_renner1, data_renner2]:
+        r1 = list(data_renner1['Tijd'])
+        r2 = list(data_renner2['Tijd'])
+        km1 = list(data_renner1['AfgelegdeAfstand'])
+        km2 = list(data_renner2['AfgelegdeAfstand'])
 
     plt.style.use('seaborn')
     fig, ax = plt.subplots()
-    ax.plot(km, r1, c='red')
-    ax.plot(km, r1, c='blue')
+    ax.plot(km1, r1, c='red',label=renner1)
+    ax.plot(km2, r2, c='blue',label=renner2)
 
     # Format plot
-    plt.title(f'TDF20220 etappe {etappe} {etappe}. {renner1} vs {renner2}', fontsize=16)
+    plt.title(f'TDF20220 etappe {etappe} {etappenr}. {renner1} vs {renner2}', fontsize=16)
     plt.xlabel('', fontsize=16)
     fig.autofmt_xdate()
     plt.ylabel('Tijd', fontsize=16)
