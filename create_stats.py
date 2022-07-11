@@ -111,5 +111,5 @@ def maak_grafiek(renner1, renner2, etappe):
     plt.tick_params(axis='both', which='major', labelsize=16)
     datum_format = myFormatter()
     ax.xaxis.set_major_formatter(datum_format)
-    plt.legend(loc='best')
+    plt.legend(loc='upper left')
     plt.show()
