@@ -59,9 +59,10 @@ def prep_afstand(data_renner, afstand):
     return data_renner
 
 def prep_tijd(data_renner):
+    starttijd = data_renner.iloc[0, data_renner.columns.get_loc('TimeStamp')]
     for x in data_renner.index:
         tijd_renner = data_renner.loc[x, 'TimeStamp']
-        data_renner.loc[x, 'Tijd'] = time.strftime('%H:%M:%S', time.localtime(tijd_renner))
+        data_renner.loc[x, 'Tijd'] = time.strftime('%H:%M:%S', time.localtime(tijd_renner - starttijd))
 
     return data_renner
 
