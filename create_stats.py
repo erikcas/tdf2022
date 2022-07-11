@@ -46,8 +46,8 @@ def etappe_afstand(stage):
     return afstand
 
 def prep_data(ruwe_data, rugnr):
-    data_renner = ruwe_data[ruwe_data['Bib'].astype(str).str.match(str(rugnr)) == True]
-    data_renner = data_renner[ruwe_data['Status'].astype(str).str.match(str('active')) == True]
+    data_renner = ruwe_data[ruwe_data['Bib'] == rugnr]
+    data_renner = data_renner[data_renner['Status'].astype(str).str.match(str('active')) == True]
 
     return data_renner
 
