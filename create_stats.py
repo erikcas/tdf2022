@@ -1,9 +1,21 @@
 import pandas as pd
 import numpy as np
-from datetime import datetime
+from datetime import datetime, timedelta
 import time
+import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+
+class myFormatter(matplotlib.ticker.Formatter):
+    def __call__(self,in_value_in_seconds,pos=None):
+        hours = int(in_value_in_seconds//(3600))
+        in_value_in_seconds -= hours * 3600
+        mins = int(in_value_in_seconds//(60))
+        in_value_in_seconds -= mins * 60
+        secs = int(in_value_in_seconds)
+
+        #return str(hours) + ":" + str(mins) + ":" + str(secs)
+        return '%02d:%02d:%02d' % (hours, mins, secs)
 
 def zoek_rugnr(naam):
     url = "https://racecenter.letour.fr/api/allCompetitors-2022"
@@ -62,8 +74,9 @@ def prep_tijd(data_renner):
     starttijd = data_renner.iloc[0, data_renner.columns.get_loc('TimeStamp')]
     for x in data_renner.index:
         tijd_renner = data_renner.loc[x, 'TimeStamp']
-        data_renner.loc[x, 'Tijd'] = time.strftime('%H:%M:%S', time.localtime(tijd_renner - starttijd))
-
+        temp = int(tijd_renner) - int(starttijd)
+        data_renner.loc[x, 'Tijd'] = temp
+ 
     return data_renner
 
 def maak_grafiek(renner1, renner2, etappe):
@@ -87,14 +100,16 @@ def maak_grafiek(renner1, renner2, etappe):
 
     plt.style.use('seaborn')
     fig, ax = plt.subplots()
-    ax.plot(km1, r1, c='red',label=renner1)
-    ax.plot(km2, r2, c='blue',label=renner2)
+    ax.plot(r1, km1, c='red',label=renner1)
+    ax.plot(r2, km2, c='blue',label=renner2)
 
     # Format plot
     plt.title(f'TDF20220 etappe {etappe} {etappenr}. {renner1} vs {renner2}', fontsize=16)
-    plt.xlabel('', fontsize=16)
+    plt.xlabel('Tijd', fontsize=12)
     fig.autofmt_xdate()
-    plt.ylabel('Tijd', fontsize=16)
+    plt.ylabel('Kilometers', fontsize=12)
     plt.tick_params(axis='both', which='major', labelsize=16)
-
+    poep = myFormatter()
+    ax.xaxis.set_major_formatter(poep)
+    plt.legend(loc='best')
     plt.show()
