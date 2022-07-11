@@ -41,12 +41,14 @@ def etappe_datum(stage):
     date = pd.to_datetime(date).dt.date
     date = pd.to_datetime(date, format='%Y-%m-%d').astype(str)
     date = date.apply(lambda x: datetime.strptime(x[:10], '%Y-%m-%d').strftime('%d_%m_%Y'))
+    graph_date = date.apply(lambda x: datetime.strptime(x, '%d_%m_%Y').strftime('%d-%m-%Y'))
     # return the string of the date, instead of its type and object
     # Stackoverflow again to the rescue!
     # https://stackoverflow.com/questions/39578466/pandas-date-to-string
     date = date.astype(str).tail(1).reset_index().loc[0, 'date']
+    graph_date = graph_date.astype(str).tail(1).reset_index().loc[0, 'date']
 
-    return date
+    return date, graph_date
 
 def etappe_afstand(stage):
     etappe = open_etappe(stage)
@@ -70,27 +72,25 @@ def prep_afstand(data_renner, afstand):
 
     return data_renner
 
-def prep_tijd(data_renner):
-    starttijd = data_renner.iloc[0, data_renner.columns.get_loc('TimeStamp')]
-    for x in data_renner.index:
-        tijd_renner = data_renner.loc[x, 'TimeStamp']
+def prep_tijd(ruwe_data, rugnr, afstand):
+    data_renner = prep_data(ruwe_data, rugnr)
+    afstand_renner = prep_afstand(data_renner, afstand)
+    starttijd = afstand_renner.iloc[0, afstand_renner.columns.get_loc('TimeStamp')]
+    for x in afstand_renner.index:
+        tijd_renner = afstand_renner.loc[x, 'TimeStamp']
         temp = int(tijd_renner) - int(starttijd)
-        data_renner.loc[x, 'Tijd'] = temp
+        afstand_renner.loc[x, 'Tijd'] = temp
  
-    return data_renner
+    return afstand_renner
 
 def maak_grafiek(renner1, renner2, etappe):
     rugnr1 = zoek_rugnr(renner1)
     rugnr2 = zoek_rugnr(renner2)
-    etappenr = etappe_datum(etappe)
+    etappenr, datum_etappe = etappe_datum(etappe)
     afstand = etappe_afstand(etappe)
     ruwe_data = pd.read_csv(f'renners_telemetry_{etappenr}.csv', sep=',')
-    data_renner1 = prep_data(ruwe_data, rugnr1)
-    data_renner2 = prep_data(ruwe_data, rugnr2)
-    data_renner1 = prep_afstand(data_renner1, afstand)
-    data_renner2 = prep_afstand(data_renner2, afstand)
-    data_renner1 = prep_tijd(data_renner1)
-    data_renner2 = prep_tijd(data_renner2)
+    data_renner1 = prep_tijd(ruwe_data, rugnr1, afstand)
+    data_renner2 = prep_tijd(ruwe_data, rugnr2, afstand)
 
     for frame in [data_renner1, data_renner2]:
         r1 = list(data_renner1['Tijd'])
@@ -104,12 +104,12 @@ def maak_grafiek(renner1, renner2, etappe):
     ax.plot(r2, km2, c='blue',label=renner2)
 
     # Format plot
-    plt.title(f'TDF20220 etappe {etappe} {etappenr}. {renner1} vs {renner2}', fontsize=16)
+    plt.title(f'TDF2022 | etappe {etappe} | datum {datum_etappe}.\n{renner1} vs {renner2}', fontsize=16)
     plt.xlabel('Tijd', fontsize=12)
     fig.autofmt_xdate()
     plt.ylabel('Kilometers', fontsize=12)
     plt.tick_params(axis='both', which='major', labelsize=16)
-    poep = myFormatter()
-    ax.xaxis.set_major_formatter(poep)
+    datum_format = myFormatter()
+    ax.xaxis.set_major_formatter(datum_format)
     plt.legend(loc='best')
     plt.show()
